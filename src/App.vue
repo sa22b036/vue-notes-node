@@ -2,17 +2,27 @@
 import note from './components/note.vue';
 import {ref, watch} from "vue";
 
-const notes = ref(JSON.parse(localStorage.getItem("notes")) || []);
+const notes = ref([]);
 const new_title = ref(null);
 const new_content = ref(null);
 
+// SyncHash ist da um Vue eine Änderung des Zustandes zu signalisieren
 const syncHash = ref(0);
 
+const baseURL = "http://localhost:8080"
+
+// Falls SyncHash sich ändert, wird Vue die Posts vom server neu holen und darstellen
+// SyncHash wird am anfang ausgeführt oder beim hinzufügen oder löschen von einträgen
 watch(()=> syncHash.value, retrieveAllPosts,{immediate:true})
+
+// Alle 5 Sekunden wird die SyncHash geändert um reglmäßig neue Daten zu holen
+setInterval(()=>{
+  syncHash.value++;
+},5000)
 
 async function retrieveAllPosts() {
   console.log("Retrieving data from the server")
-  const request = await fetch("http://localhost:8080/posts");
+  const request = await fetch(`${baseURL}/posts`);
   const response = await request.json();
   notes.value = response;
   return Promise.resolve(response);
@@ -23,7 +33,7 @@ async function savePost(title,content){
   const requestBody = {
     title, content
   }
-  const request = await fetch("http://localhost:8080/posts/create",{
+  const request = await fetch(`${baseURL}/posts/create`,{
     body: JSON.stringify(requestBody),
     cache: 'no-cache',
     headers:{
@@ -38,7 +48,7 @@ async function savePost(title,content){
 
 async function deletePost(identifier){
   console.log("Deleting post for id "+identifier);
-  const request = await fetch(`http://localhost:8080/posts/delete/${identifier}`,{
+  const request = await fetch(`${baseURL}/posts/delete/${identifier}`,{
     method: "DELETE"
   });
   const deleteItem = await request.json();
@@ -48,14 +58,11 @@ async function deletePost(identifier){
 
 function handleClick() {
   savePost(new_title.value,new_content.value).then((createdPost)=>{
-//    notes.value.push(createdPost);
     syncHash.value++;
   });
 }
 
-function deleteNote(index) {
-  
-}
+
 </script>
 
 <template>
