@@ -1,6 +1,7 @@
 <script setup>
 const props = defineProps({
     index: Number,
+    identifier: Number,
     title: String,
     content: String
 });
@@ -11,12 +12,12 @@ const props = defineProps({
 <template>
     <div class="note-container">
         <h4 class="note-title">
-            {{ title }}
+            {{ title }} and id {{identifier }}
         </h4>
         <p class="note-content">
             {{ content }}
         </p>
-        <button class="delete-button" @click="$emit('deletion-event', props.index)"/>
+        <button class="delete-button" @click="$emit('deletion-event', props.identifier)"/>
     </div>
 </template>
 

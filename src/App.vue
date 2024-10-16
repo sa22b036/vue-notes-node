@@ -6,27 +6,55 @@ const notes = ref(JSON.parse(localStorage.getItem("notes")) || []);
 const new_title = ref(null);
 const new_content = ref(null);
 
-const syncHash = 0;
+const syncHash = ref(0);
 
-watch(()=> syncHash, retrieveAllPosts,{immediate:true})
+watch(()=> syncHash.value, retrieveAllPosts,{immediate:true})
 
 async function retrieveAllPosts() {
   console.log("Retrieving data from the server")
   const request = await fetch("http://localhost:8080/posts");
   const response = await request.json();
+  notes.value = response;
   return Promise.resolve(response);
 }
 
-function handleClick() {
-  if(new_title) {
-    notes.value.push({title: new_title.value, content: new_content.value});
+async function savePost(title,content){
+  console.log("Saving post to server");
+  const requestBody = {
+    title, content
   }
-  localStorage.setItem("notes", JSON.stringify(notes.value));
+  const request = await fetch("http://localhost:8080/posts/create",{
+    body: JSON.stringify(requestBody),
+    cache: 'no-cache',
+    headers:{
+      "Content-Type":"application/json"
+    },
+    method: "POST"
+  })
+  const response = await request.json();
+  console.log(`Saved post with identifier ${response.identifier}`)
+  return Promise.resolve(response);
+}
+
+async function deletePost(identifier){
+  console.log("Deleting post for id "+identifier);
+  const request = await fetch(`http://localhost:8080/posts/delete/${identifier}`,{
+    method: "DELETE"
+  });
+  const deleteItem = await request.json();
+  alert(`Delete item '${deleteItem.title}'`)
+  syncHash.value++;
+}
+
+function handleClick() {
+  savePost(new_title.value,new_content.value).then((createdPost)=>{
+//    notes.value.push(createdPost);
+    syncHash.value++;
+  });
 }
 
 function deleteNote(index) {
-  notes.value.splice(index, 1);
-  localStorage.setItem("notes", JSON.stringify(notes.value));
+  
 }
 </script>
 
@@ -37,7 +65,7 @@ function deleteNote(index) {
         <textarea v-model="new_content" />
         <button class="input-button" @click="handleClick">Add</button>
     </div>
-    <note v-for="(n, i) in notes" v-bind:key="i" :index="i" :title="n.title" :content="n.content" @deletion-event="deleteNote" />
+    <note v-for="(n, i) in notes" v-bind:key="i" :index="i" :identifier="n.identifier" :title="n.title" :content="n.content" @deletion-event="deletePost" />
   </div>
 </template>
 
