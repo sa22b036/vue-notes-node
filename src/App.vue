@@ -9,7 +9,7 @@ const new_content = ref(null);
 // SyncHash ist da um Vue eine Änderung des Zustandes zu signalisieren
 const syncHash = ref(0);
 
-const baseURL = "http://localhost:8080"
+const baseURL = "http://localhost:8080";
 
 // Falls SyncHash sich ändert, wird Vue die Posts vom server neu holen und darstellen
 // SyncHash wird am anfang ausgeführt oder beim hinzufügen oder löschen von einträgen
