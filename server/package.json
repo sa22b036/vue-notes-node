@@ -1,0 +1,15 @@
+{
+    "name": "notes-server",
+    "private": true,
+    "version": "0.0.0",
+    "main": "index.js",
+    "scripts": {
+      "dev": "node index.js"
+    },
+    "dependencies": {
+      "express": "latest"
+    },
+    "devDependencies": {
+    }
+  }
+  
